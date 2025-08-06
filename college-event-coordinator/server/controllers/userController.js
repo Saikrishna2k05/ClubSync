@@ -43,7 +43,8 @@ export const login=async(req,res)=>{
         return res.status(200).json({
             success: true,
             message:`Welcome back ${user.username}`,
-            user
+            user,
+            token // Also return token in response for easier testing
         })
     }
     catch(err)

@@ -1,2 +1,4 @@
 node_modules/
 .env
+API_TESTING_GUIDE.md
+API_ENDPOINTS.md

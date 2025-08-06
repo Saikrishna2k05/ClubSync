@@ -1,5 +1,8 @@
 import express from 'express'
 import userApp from './routes/userRoutes.js';
+import eventApp from './routes/eventRoutes.js';
+import clubApp from './routes/clubRoutes.js';
+import userProfileApp from './routes/userProfileRoutes.js';
 import connectDB from './config/db.js'
 import dotenv from 'dotenv'
 import cors from 'cors'
@@ -16,7 +19,12 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json());
 
-app.use('/user',userApp);
+// Routes
+app.use('/user', userApp);
+app.use('/api/events', eventApp);
+app.use('/api/clubs', clubApp);
+app.use('/api/users', userProfileApp);
+
 app.listen(PORT,()=>{
     console.log(`Server started at http://localhost:${PORT}`);
     connectDB();
