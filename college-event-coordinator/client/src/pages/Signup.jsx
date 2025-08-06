@@ -36,8 +36,8 @@ const Signup = () => {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters long");
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters long");
       setLoading(false);
       return;
     }
@@ -58,10 +58,12 @@ const Signup = () => {
         }),
       });
 
-      // Registration successful, redirect to login
-      navigate("/login", { 
-        state: { message: "Account created successfully! Please sign in." }
-      });
+      if (data.success) {
+        // Registration successful, redirect to login
+        navigate("/login");
+      } else {
+        setError(data.message || "Registration failed. Please try again.");
+      }
     } catch (err) {
       console.error("Registration error:", err);
       setError(err.message || "Registration failed. Please try again.");
@@ -141,7 +143,7 @@ const Signup = () => {
                   value={formData.password}
                   onChange={handleChange}
                   className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors bg-white text-gray-900 placeholder-gray-500"
-                  placeholder="Create a password"
+                  placeholder="Create a password (min 8 characters)"
                   required
                 />
                 <button

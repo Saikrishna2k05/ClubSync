@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Calendar,
   Users,
@@ -22,14 +22,44 @@ import { getAuthCookies, clearAuthCookies } from "../utils/cookies.js";
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [events, setEvents] = useState([]);
+  const [clubs, setClubs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const auth = getAuthCookies();
     if (auth.user) {
       setUser(auth.user);
+      fetchDashboardData();
+    } else {
+      navigate("/login");
     }
-  }, []);
+  }, [navigate]);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch events and clubs in parallel
+      const [eventsResponse, clubsResponse] = await Promise.all([
+        apiCall(API_ENDPOINTS.GET_EVENTS),
+        apiCall(API_ENDPOINTS.GET_CLUBS),
+      ]);
+
+      if (eventsResponse.success) {
+        setEvents(eventsResponse.data || []);
+      }
+
+      if (clubsResponse.success) {
+        setClubs(clubsResponse.data || []);
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -39,7 +69,7 @@ const Dashboard = () => {
       // This calls: POST /user/logout
       // ===========================================
       await apiCall(API_ENDPOINTS.LOGOUT, {
-        method: 'POST'
+        method: "POST",
       });
     } catch (error) {
       console.error("Logout error:", error);
@@ -64,57 +94,55 @@ const Dashboard = () => {
     { name: "Settings", href: "/settings", icon: Settings, current: false },
   ];
 
-  const upcomingEvents = [
-    {
-      id: 1,
-      title: "Tech Meetup 2024",
-      date: "2024-01-15",
-      time: "14:00",
-      location: "Main Auditorium",
-      attendees: 45,
-      type: "Workshop",
-    },
-    {
-      id: 2,
-      title: "Cultural Festival",
-      date: "2024-01-20",
-      time: "18:00",
-      location: "Campus Grounds",
-      attendees: 120,
-      type: "Cultural",
-    },
-    {
-      id: 3,
-      title: "Career Fair",
-      date: "2024-01-25",
-      time: "10:00",
-      location: "Conference Hall",
-      attendees: 200,
-      type: "Career",
-    },
-  ];
-
+  // Calculate stats from real data
   const stats = [
     {
       name: "Total Events",
-      value: "24",
+      value: events.length.toString(),
       change: "+12%",
       changeType: "positive",
     },
     {
       name: "Active Clubs",
-      value: "18",
+      value: clubs.length.toString(),
       change: "+3%",
       changeType: "positive",
     },
     {
       name: "Total Members",
-      value: "1,247",
+      value: clubs
+        .reduce((total, club) => total + (club.members?.length || 0), 0)
+        .toString(),
       change: "+8%",
       changeType: "positive",
     },
-    { name: "This Month", value: "8", change: "+2", changeType: "positive" },
+    {
+      name: "This Month",
+      value: events
+        .filter((event) => {
+          const eventDate = new Date(event.date);
+          const now = new Date();
+          return (
+            eventDate.getMonth() === now.getMonth() &&
+            eventDate.getFullYear() === now.getFullYear()
+          );
+        })
+        .length.toString(),
+      change: "+2",
+      changeType: "positive",
+    },
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex items-center space-x-2">
+          <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-gray-600">Loading dashboard...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -137,9 +165,9 @@ const Dashboard = () => {
           </div>
           <nav className="flex-1 space-y-1 px-2 py-4">
             {navigation.map((item) => (
-              <Link
+              <a
                 key={item.name}
-                to={item.href}
+                href={item.href}
                 className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
                   item.current
                     ? "bg-blue-100 text-blue-900"
@@ -148,7 +176,7 @@ const Dashboard = () => {
               >
                 <item.icon className="mr-3 h-5 w-5" />
                 {item.name}
-              </Link>
+              </a>
             ))}
           </nav>
         </div>
@@ -162,9 +190,9 @@ const Dashboard = () => {
           </div>
           <nav className="flex-1 space-y-1 px-2 py-4">
             {navigation.map((item) => (
-              <Link
+              <a
                 key={item.name}
-                to={item.href}
+                href={item.href}
                 className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
                   item.current
                     ? "bg-blue-100 text-blue-900"
@@ -173,7 +201,7 @@ const Dashboard = () => {
               >
                 <item.icon className="mr-3 h-5 w-5" />
                 {item.name}
-              </Link>
+              </a>
             ))}
           </nav>
         </div>
@@ -372,49 +400,57 @@ const Dashboard = () => {
                 </a>
               </div>
               <div className="bg-white shadow overflow-hidden sm:rounded-md">
-                <ul className="divide-y divide-gray-200">
-                  {upcomingEvents.map((event) => (
-                    <li key={event.id}>
-                      <div className="px-4 py-4 sm:px-6">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                <Calendar className="h-5 w-5 text-blue-600" />
+                {events.length > 0 ? (
+                  <ul className="divide-y divide-gray-200">
+                    {events.slice(0, 3).map((event) => (
+                      <li key={event._id}>
+                        <div className="px-4 py-4 sm:px-6">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0">
+                                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                  <Calendar className="h-5 w-5 text-blue-600" />
+                                </div>
+                              </div>
+                              <div className="ml-4">
+                                <div className="flex items-center">
+                                  <p className="text-sm font-medium text-gray-900">
+                                    {event.title}
+                                  </p>
+                                  <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    {event.category}
+                                  </span>
+                                </div>
+                                <div className="flex items-center mt-1 text-sm text-gray-500">
+                                  <Clock className="mr-1 h-4 w-4" />
+                                  {new Date(
+                                    event.date
+                                  ).toLocaleDateString()} at {event.time}
+                                  <MapPin className="ml-3 mr-1 h-4 w-4" />
+                                  {event.location}
+                                  <Users className="ml-3 mr-1 h-4 w-4" />
+                                  {event.attendees?.length || 0} attendees
+                                </div>
                               </div>
                             </div>
-                            <div className="ml-4">
-                              <div className="flex items-center">
-                                <p className="text-sm font-medium text-gray-900">
-                                  {event.title}
-                                </p>
-                                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                  {event.type}
-                                </span>
-                              </div>
-                              <div className="flex items-center mt-1 text-sm text-gray-500">
-                                <Clock className="mr-1 h-4 w-4" />
-                                {event.date} at {event.time}
-                                <MapPin className="ml-3 mr-1 h-4 w-4" />
-                                {event.location}
-                                <Users className="ml-3 mr-1 h-4 w-4" />
-                                {event.attendees} attendees
-                              </div>
+                            <div className="flex items-center space-x-2">
+                              <button className="text-sm text-blue-600 hover:text-blue-500">
+                                View Details
+                              </button>
+                              <button className="text-sm text-gray-400 hover:text-gray-500">
+                                Edit
+                              </button>
                             </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <button className="text-sm text-blue-600 hover:text-blue-500">
-                              View Details
-                            </button>
-                            <button className="text-sm text-gray-400 hover:text-gray-500">
-                              Edit
-                            </button>
                           </div>
                         </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="px-4 py-8 text-center">
+                    <p className="text-gray-500">No upcoming events found.</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

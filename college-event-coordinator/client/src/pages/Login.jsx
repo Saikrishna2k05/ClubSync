@@ -31,7 +31,7 @@ const Login = () => {
       // API INTEGRATION POINT - Login Endpoint
       // ===========================================
       // This calls: POST /user/login
-      // Expected backend response: { success: true, message: "string", user: object, token: "jwt_token" }
+      // Expected backend response: { success: true, message: "Welcome back...", user: {...}, token: "..." }
       // ===========================================
       const data = await apiCall(API_ENDPOINTS.LOGIN, {
         method: "POST",
@@ -41,9 +41,13 @@ const Login = () => {
         }),
       });
 
-      // Store user data and token in cookies
-      setAuthCookies(data.user, data.token);
-      navigate("/dashboard");
+      if (data.success) {
+        // Store user data and token in cookies
+        setAuthCookies(data.user, data.token);
+        navigate("/dashboard");
+      } else {
+        setError(data.message || "Login failed. Please try again.");
+      }
     } catch (err) {
       console.error("Login error:", err);
       setError(err.message || "Login failed. Please try again.");
@@ -157,6 +161,17 @@ const Login = () => {
                 Sign up
               </Link>
             </p>
+          </div>
+
+          {/* Demo credentials */}
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-xs text-blue-800 font-medium mb-2">
+              Demo Credentials:
+            </p>
+            <div className="text-xs text-blue-700 space-y-1">
+              <p>Email: john@example.com | Password: password123</p>
+              <p>Email: jane@example.com | Password: password123</p>
+            </div>
           </div>
         </div>
       </div>
