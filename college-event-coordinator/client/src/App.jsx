@@ -9,6 +9,8 @@ import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import Events from "./pages/Events.jsx";
+import Clubs from "./pages/Clubs.jsx";
 import Navbar from "./components/Navbar.jsx";
 import { getAuthCookies } from "./utils/cookies.js";
 import "./App.css";
@@ -104,6 +106,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/events"
+            element={
+              <ProtectedRoute>
+                <Events />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/clubs"
+            element={
+              <ProtectedRoute>
+                <Clubs />
               </ProtectedRoute>
             }
           />

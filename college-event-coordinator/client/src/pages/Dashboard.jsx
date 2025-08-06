@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Calendar,
   Users,
@@ -36,12 +36,11 @@ const Dashboard = () => {
       // ===========================================
       // API INTEGRATION POINT - Logout Endpoint
       // ===========================================
-      // This calls: POST /auth/logout
-      // Uncomment the following lines if your backend has a logout endpoint
-      // await apiCall(API_ENDPOINTS.LOGOUT, {
-      //   method: 'POST'
-      // });
+      // This calls: POST /user/logout
       // ===========================================
+      await apiCall(API_ENDPOINTS.LOGOUT, {
+        method: 'POST'
+      });
     } catch (error) {
       console.error("Logout error:", error);
       // Continue with logout even if API call fails
@@ -138,9 +137,9 @@ const Dashboard = () => {
           </div>
           <nav className="flex-1 space-y-1 px-2 py-4">
             {navigation.map((item) => (
-              <a
+              <Link
                 key={item.name}
-                href={item.href}
+                to={item.href}
                 className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
                   item.current
                     ? "bg-blue-100 text-blue-900"
@@ -149,7 +148,7 @@ const Dashboard = () => {
               >
                 <item.icon className="mr-3 h-5 w-5" />
                 {item.name}
-              </a>
+              </Link>
             ))}
           </nav>
         </div>
@@ -163,9 +162,9 @@ const Dashboard = () => {
           </div>
           <nav className="flex-1 space-y-1 px-2 py-4">
             {navigation.map((item) => (
-              <a
+              <Link
                 key={item.name}
-                href={item.href}
+                to={item.href}
                 className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
                   item.current
                     ? "bg-blue-100 text-blue-900"
@@ -174,7 +173,7 @@ const Dashboard = () => {
               >
                 <item.icon className="mr-3 h-5 w-5" />
                 {item.name}
-              </a>
+              </Link>
             ))}
           </nav>
         </div>

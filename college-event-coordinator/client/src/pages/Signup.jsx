@@ -46,8 +46,8 @@ const Signup = () => {
       // ===========================================
       // API INTEGRATION POINT - Register Endpoint
       // ===========================================
-      // This calls: POST /auth/register
-      // Expected backend response: { user: { id, username, email, role }, token: "jwt_token" }
+      // This calls: POST /user/signup
+      // Expected backend response: { success: true, message: "Account Created Successfully" }
       // ===========================================
       const data = await apiCall(API_ENDPOINTS.REGISTER, {
         method: "POST",
@@ -58,9 +58,10 @@ const Signup = () => {
         }),
       });
 
-      // Store user data and token in cookies
-      setAuthCookies(data.user, data.token);
-      navigate("/dashboard");
+      // Registration successful, redirect to login
+      navigate("/login", { 
+        state: { message: "Account created successfully! Please sign in." }
+      });
     } catch (err) {
       console.error("Registration error:", err);
       setError(err.message || "Registration failed. Please try again.");

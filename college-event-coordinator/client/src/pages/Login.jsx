@@ -30,8 +30,8 @@ const Login = () => {
       // ===========================================
       // API INTEGRATION POINT - Login Endpoint
       // ===========================================
-      // This calls: POST /auth/login
-      // Expected backend response: { user: { id, username, email, role }, token: "jwt_token" }
+      // This calls: POST /user/login
+      // Expected backend response: { success: true, message: "string", user: object, token: "jwt_token" }
       // ===========================================
       const data = await apiCall(API_ENDPOINTS.LOGIN, {
         method: "POST",
